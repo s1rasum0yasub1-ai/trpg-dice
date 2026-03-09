@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>TRPG Dice</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="theme-dark">
+
+<h1>TRPG Dice</h1>
+
+<div class="themeButtons">
+
+<button onclick="setTheme('theme-light')">白</button>
+<button onclick="setTheme('theme-dark')">黒</button>
+<button onclick="setTheme('theme-midnight')">ミッドナイト</button>
+
+</div>
+
+<div class="nameBox">
+
+<input id="charName" placeholder="キャラ名">
+
+</div>
+
+<div class="diceBox">
+
+<input id="diceInput" placeholder="例: CCB<=60 攻撃">
+
+<button onclick="roll()">振る</button>
+
+</div>
+
+<div class="skillButtons">
+
+<button onclick="quick('CCB<=70')">目星</button>
+<button onclick="quick('CCB<=60')">聞き耳</button>
+<button onclick="quick('CCB<=50')">図書館</button>
+
+</div>
+
+<h2>結果</h2>
+
+<div id="result"></div>
+
+<h2>履歴</h2>
+
+<button onclick="clearHistory()">履歴クリア</button>
+
+<div id="history"></div>
+
+<script>
+
+function quick(cmd){
+
+document.getElementById("diceInput").value=cmd
+roll()
+
+}
+
+function roll(){
+
+let input=document.getElementById("diceInput").value.trim()
+
+if(!input)return
+
+let main=input.split(" ")[0]
+
+let color="blue"
+let resultText=""
+
+let dice=Math.floor(Math.random()*100)+1
+
+// CCB
+
+if(main.startsWith("CCB<=")){
+
+let target=parseInt(main.replace("CCB<=",""))
+
+if(dice==1){
+
+color="yellow"
+resultText="1 → クリティカル"
+
+}else if(dice>=96){
+
+color="red"
+resultText=dice+" → ファンブル"
+
+}else if(dice<=target){
+
+resultText=dice+" → 成功"
+
+}else{
+
+resultText=dice+" → 失敗"
+
+}
+
+}
+
+// RESB
+
+else if(main.startsWith("RESB")){
+
+let nums=main.match(/\((\d+)-(\d+)\)/)
+
+let a=parseInt(nums[1])
+let b=parseInt(nums[2])
+
+let target=50+(a-b)*5
+
+let d=Math.floor(Math.random()*100)+1
+
+if(d<=target){
+
+resultText=d+" → 成功"
+
+}else{
+
+resultText=d+" → 失敗"
+
+}
+
+}
+
+// 1B100
+
+else if(main=="1B100"){
+
+let d=Math.floor(Math.random()*100)+1
+
+resultText=d
+
+}
+
+// XdY
+
+else if(main.includes("d")){
+
+let parts=main.split("d")
+
+let count=parseInt(parts[0])
+let sides=parseInt(parts[1])
+
+let total=0
+let detail=[]
+
+for(let i=0;i<count;i++){
+
+let r=Math.floor(Math.random()*sides)+1
+total+=r
+detail.push(r)
+
+}
+
+resultText=total+" ("+detail.join(",")+")"
+
+}
+
+// choice
+
+else if(main.startsWith("choice[")){
+
+let text=main.replace("choice[","").replace("]","")
+
+let arr=text.split(",")
+
+let pick=arr[Math.floor(Math.random()*arr.length)]
+
+resultText=pick
+
+}
+
+showResult(resultText,color,input)
+
+}
+
+function showResult(text,color,cmd){
+
+let name=document.getElementById("charName").value || "PL"
+
+let html="<div class='diceResult "+color+"'>"+text+"</div>"
+
+document.getElementById("result").innerHTML=html
+
+let log="<div class='historyLine'><span class='char'>"+name+"</span> : "+cmd+" → <span class='"+color+"'>"+text+"</span></div>"
+
+document.getElementById("history").innerHTML=log+document.getElementById("history").innerHTML
+
+}
+
+function clearHistory(){
+
+document.getElementById("history").innerHTML=""
+
+}
+
+function setTheme(theme){
+
+document.body.className=theme
+
+}
+
+</script>
+
+</body>
+  </html>
